@@ -16,11 +16,14 @@ final class RemoteNode {
 	}
 }
 
-/// The FTP tab of the directory window: pick a site, connect, browse, double-click to open.
+/// The FTP tab of the directory window: pick a site from the menu (that connects), browse, double-click to open.
+/// The menu always shows the site the tree is on; nothing connects until you pick one.
 final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate {
 	private let sitePopup = NSPopUpButton(frame: .zero, pullsDown: false)
-	private let connectButton = NSButton(title: "Connect", target: nil, action: nil)
 	private let pathLabel = NSTextField(labelWithString: "")
+	private var pathRow: NSStackView?
+	/// Shown inside the empty tree: what to do first, or "Connecting…".
+	private let treeHint = NSTextField(wrappingLabelWithString: "")
 	private let statusLabel = NSTextField(labelWithString: "")
 	private let outline = NSOutlineView()
 	private(set) var client: FTPClient?
@@ -77,13 +80,11 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 		sitePopup.controlSize = .small
 		sitePopup.font = .systemFont(ofSize: 11)
 		sitePopup.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-		connectButton.controlSize = .small
-		connectButton.font = .systemFont(ofSize: 11)
-		connectButton.bezelStyle = .rounded
-		connectButton.target = self
-		connectButton.action = #selector(connect)
-		let siteRow = NSStackView(views: [sitePopup, connectButton, iconButton("gearshape", "FTP sites…", #selector(manageSites))])
-		siteRow.spacing = 4
+		sitePopup.setContentHuggingPriority(.init(1), for: .horizontal)
+		sitePopup.autoenablesItems = false
+		sitePopup.target = self
+		sitePopup.action = #selector(siteChosen)
+		let siteRow = NSStackView(views: [sitePopup])
 
 		pathLabel.font = .systemFont(ofSize: 11, weight: .semibold)
 		pathLabel.lineBreakMode = .byTruncatingHead
@@ -91,6 +92,7 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 		let pathRow = NSStackView(views: [iconButton("arrow.up", "Parent folder", #selector(goUp)), pathLabel, NSView(),
 										  iconButton("arrow.clockwise", "Refresh", #selector(refreshAll))])
 		pathRow.spacing = 6
+		self.pathRow = pathRow
 
 		statusLabel.font = .systemFont(ofSize: 11)
 		statusLabel.textColor = .secondaryLabelColor
@@ -115,16 +117,34 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 		scroll.hasVerticalScroller = true
 		scroll.autohidesScrollers = true
 		scroll.drawsBackground = false
+		treeHint.font = .systemFont(ofSize: 12)
+		treeHint.textColor = .secondaryLabelColor
+		treeHint.alignment = .center
+		treeHint.translatesAutoresizingMaskIntoConstraints = false
+		// The tree with its hint on top, in one view for the split.
+		let treeArea = NSView()
+		scroll.translatesAutoresizingMaskIntoConstraints = false
+		treeArea.addSubview(scroll)
+		treeArea.addSubview(treeHint)
+		NSLayoutConstraint.activate([
+			scroll.leadingAnchor.constraint(equalTo: treeArea.leadingAnchor),
+			scroll.trailingAnchor.constraint(equalTo: treeArea.trailingAnchor),
+			scroll.topAnchor.constraint(equalTo: treeArea.topAnchor),
+			scroll.bottomAnchor.constraint(equalTo: treeArea.bottomAnchor),
+			treeHint.centerYAnchor.constraint(equalTo: treeArea.centerYAnchor),
+			treeHint.leadingAnchor.constraint(equalTo: treeArea.leadingAnchor, constant: 16),
+			treeHint.trailingAnchor.constraint(equalTo: treeArea.trailingAnchor, constant: -16),
+		])
 
 		// The FTP tree above, Favorites below, with a divider you can drag.
 		let split = NSSplitView()
 		split.isVertical = false
 		split.dividerStyle = .thin
-		split.addArrangedSubview(scroll)
+		split.addArrangedSubview(treeArea)
 		split.addArrangedSubview(favorites)
 		split.setHoldingPriority(.init(250), forSubviewAt: 0)
 		split.setHoldingPriority(.init(260), forSubviewAt: 1)
-		scroll.heightAnchor.constraint(greaterThanOrEqualToConstant: 80).isActive = true
+		treeArea.heightAnchor.constraint(greaterThanOrEqualToConstant: 80).isActive = true
 		let favHeight = favorites.heightAnchor.constraint(equalToConstant: 230)
 		favHeight.priority = .init(200)
 		favHeight.isActive = true
@@ -155,24 +175,91 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 			stack.topAnchor.constraint(equalTo: topAnchor),
 			stack.bottomAnchor.constraint(equalTo: bottomAnchor),
 		])
-		setStatus("Choose a site and click Connect.")
+		showNotConnected()
 	}
 
+	private static let manageTag = -2
+
+	/// Rebuilds the site menu (after FTP Sites changes). The tree stays on its site if that site still exists.
 	func reloadSites() {
-		let sites = FTPSites.all
 		// A site's host or password may have changed: the next use connects with the new details.
 		clients = [:]
-		sitePopup.removeAllItems()
-		if sites.isEmpty {
-			sitePopup.addItem(withTitle: "No sites yet")
-			sitePopup.isEnabled = false
-			connectButton.title = "Add Site…"
-		} else {
-			sitePopup.addItems(withTitles: sites.map(\.name))
-			sitePopup.isEnabled = true
-			connectButton.title = "Connect"
-			if let last = Preferences.lastSiteID, let i = sites.firstIndex(where: { $0.id == last }) { sitePopup.selectItem(at: i) }
+		if let c = client {
+			if let site = FTPSites.site(id: c.site.id) {
+				// Still there: the tree keeps its place but uses the site's new details from now on.
+				if let password = Keychain.password(for: site.id) {
+					client = FTPClient(site: site, password: password)
+					clients[site.id] = client
+				}
+			} else {
+				client = nil
+				root = nil
+				outline.reloadData()
+				showNotConnected()
+			}
 		}
+		rebuildSiteMenu()
+	}
+
+	/// "Choose a site…" while not connected, the sites (last used first), then "Add or Edit Sites…".
+	private func rebuildSiteMenu() {
+		let menu = NSMenu()
+		var sites = FTPSites.all
+		if let last = Preferences.lastSiteID, let i = sites.firstIndex(where: { $0.id == last }) { sites.insert(sites.remove(at: i), at: 0) }
+		if sites.isEmpty {
+			let add = NSMenuItem(title: "Add a Site…", action: nil, keyEquivalent: "")
+			add.tag = Self.manageTag
+			menu.addItem(add)
+		} else {
+			if client == nil {
+				let choose = NSMenuItem(title: "Choose a site…", action: nil, keyEquivalent: "")
+				choose.isEnabled = false
+				menu.addItem(choose)
+			}
+			for site in sites {
+				let item = NSMenuItem(title: site.name, action: nil, keyEquivalent: "")
+				item.representedObject = site.id
+				item.toolTip = site.username.isEmpty ? site.host : "\(site.username)@\(site.host)"
+				menu.addItem(item)
+			}
+			menu.addItem(.separator())
+			let manage = NSMenuItem(title: "Add or Edit Sites…", action: nil, keyEquivalent: "")
+			manage.tag = Self.manageTag
+			menu.addItem(manage)
+		}
+		sitePopup.menu = menu
+		showSelectedSite()
+	}
+
+	/// The menu shows the site the tree is on, or "Choose a site…".
+	private func showSelectedSite() {
+		let current = client.flatMap { c in sitePopup.itemArray.first { $0.representedObject as? String == c.site.id } }
+		sitePopup.select(current ?? sitePopup.itemArray.first)
+		sitePopup.toolTip = current?.toolTip
+	}
+
+	@objc private func siteChosen() {
+		guard let item = sitePopup.selectedItem else { return }
+		if item.tag == Self.manageTag {
+			showSelectedSite()
+			onManageSites?()
+			return
+		}
+		guard let id = item.representedObject as? String else { return }
+		// Picking the site the tree is already on retries it if it didn't load.
+		if id == client?.site.id {
+			if let root, root.children == nil, !root.loading { refreshAll() }
+			return
+		}
+		connect(to: id)
+	}
+
+	private func showNotConnected() {
+		pathLabel.stringValue = ""
+		pathRow?.isHidden = true
+		treeHint.stringValue = FTPSites.all.isEmpty ? "Add a site from the menu above to browse its files." : "Pick a site from the menu above to browse its files."
+		treeHint.isHidden = false
+		setStatus("")
 	}
 
 	private func setStatus(_ s: String, error: Bool = false) {
@@ -181,17 +268,18 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 		statusLabel.toolTip = s
 	}
 
-	@objc private func manageSites() { onManageSites?() }
-
-	/// Connects to the chosen site, asking for the password if the Keychain has none.
-	@objc func connect() {
-		let sites = FTPSites.all
-		guard !sites.isEmpty else { onManageSites?(); return }
-		let site = sites[max(0, sitePopup.indexOfSelectedItem)]
-		Preferences.lastSiteID = site.id
+	/// Connects the tree to a site, asking for the password if the Keychain has none.
+	/// Cancelling the password leaves the tree (and the menu) as they were.
+	private func connect(to siteID: String) {
+		guard let site = FTPSites.site(id: siteID) else { return }
 		// Reuse the connection a favorite already made, so the Keychain is asked only once per site.
-		guard let c = client(for: site.id) else { return }
+		guard let c = client(for: site.id) else {
+			showSelectedSite()
+			return
+		}
+		Preferences.lastSiteID = site.id
 		client = c
+		rebuildSiteMenu()
 		setRoot(site.rootPath)
 	}
 
@@ -229,6 +317,7 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 	private func setRoot(_ path: String) {
 		let node = RemoteNode(name: path, path: path, isDirectory: true, parent: nil)
 		root = node
+		pathRow?.isHidden = false
 		pathLabel.stringValue = "/" + path
 		pathLabel.toolTip = client?.displayURL(path)
 		outline.reloadData()
@@ -239,6 +328,10 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 		guard let client, !node.loading else { return }
 		node.loading = true
 		setStatus("Loading /\(node.path)…")
+		if node === root {
+			treeHint.stringValue = "Connecting…"
+			treeHint.isHidden = false
+		}
 		client.list(node.path) { [weak self] result in
 			guard let self else { return }
 			node.loading = false
@@ -247,12 +340,20 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 				node.children = entries.map {
 					RemoteNode(name: $0.name, path: FTPClient.join(node.path, $0.name), isDirectory: $0.isDirectory, parent: node)
 				}
-				self.setStatus("Connected to \(client.site.host)")
+				self.setStatus("")
+				if node === self.root {
+					self.treeHint.stringValue = entries.isEmpty ? "This folder is empty." : ""
+					self.treeHint.isHidden = !entries.isEmpty
+				}
 				self.outline.reloadItem(node === self.root ? nil : node, reloadChildren: true)
 				if node !== self.root { self.outline.expandItem(node) }
 			case let .failure(error):
 				node.children = nil
 				self.setStatus(error.message.components(separatedBy: "\n").first ?? error.message, error: true)
+				if node === self.root {
+					self.treeHint.stringValue = "Couldn't connect. Click ⟳ to try again, or check the site in Add or Edit Sites…"
+					self.treeHint.isHidden = false
+				}
 				if node === self.root { self.showError("Couldn't list /\(node.path)", error) }
 			}
 		}
@@ -264,7 +365,7 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 	}
 
 	@objc private func refreshAll() {
-		guard let root else { connect(); return }
+		guard let root else { return }
 		root.children = nil
 		outline.reloadData()
 		load(root)
