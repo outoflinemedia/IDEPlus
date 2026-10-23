@@ -1,0 +1,14 @@
+.build/
+build/
+.DS_Store
+.swiftpm/
+# Local folder for old syntax files that are no longer used
+/syntax/
+# Language files not yet redone with IDEPlus' own lists: kept on this Mac only
+/Resources/Syntax/c-cpp.ipsyntax
+/Resources/Syntax/csharp.ipsyntax
+/Resources/Syntax/java.ipsyntax
+/Resources/Syntax/jsp.ipsyntax
+/Resources/Syntax/perl.ipsyntax
+/Resources/Syntax/ruby.ipsyntax
+/Resources/Syntax/vbscript.ipsyntax

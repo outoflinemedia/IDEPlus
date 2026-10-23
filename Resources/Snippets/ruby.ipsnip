@@ -1,0 +1,14 @@
+{
+	"name": "Ruby",
+	"language": "Ruby",
+	"snippets": [
+		{"trigger": "if", "lineStart": true, "body": "if {{cursor}}\n\t\nend"},
+		{"trigger": "unless", "lineStart": true, "body": "unless {{cursor}}\n\t\nend"},
+		{"trigger": "while", "lineStart": true, "body": "while {{cursor}}\n\t\nend"},
+		{"trigger": "def", "lineStart": true, "body": "def {{cursor}}\n\t\nend"},
+		{"trigger": "class", "lineStart": true, "body": "class {{cursor}}\n\tdef initialize\n\t\t\n\tend\nend"},
+		{"trigger": "module", "lineStart": true, "body": "module {{cursor}}\n\t\nend"},
+		{"trigger": "begin", "lineStart": true, "body": "begin\n\t{{cursor}}\nrescue StandardError => e\n\t\nend"},
+		{"trigger": "do", "body": "do |{{cursor}}|\n\t\nend"}
+	]
+}

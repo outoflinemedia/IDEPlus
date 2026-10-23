@@ -1,0 +1,25 @@
+{
+	"name": "My Language",
+	"extensions": ["myl"],
+	"caseSensitive": true,
+	"delimiters": ",(){}[]-+*%/=\"'~!&|<>?:;.^",
+	"lineComments": ["//"],
+	"blockComments": [["/*", "*/"]],
+	"quotes": ["'", "\""],
+	"escape": "\\",
+	"keywordGroups": [
+		{
+			"name": "Keywords",
+			"color": "keyword",
+			"words": ["if", "else", "for", "while", "return", "function"]
+		},
+		{
+			"name": "Built-in functions and types",
+			"color": "type",
+			"words": ["print", "length"]
+		}
+	],
+	"prefixes": [{"prefix": "$", "color": "attribute"}],
+	"numbers": true,
+	"commentToggle": {"line": "//", "block": ["/*", "*/"]}
+}

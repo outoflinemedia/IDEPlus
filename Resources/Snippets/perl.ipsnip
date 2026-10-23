@@ -1,0 +1,13 @@
+{
+	"name": "Perl",
+	"language": "Perl",
+	"snippets": [
+		{"trigger": "if", "body": "if ({{cursor}}) {\n\t\n}"},
+		{"trigger": "elsif", "body": "elsif ({{cursor}}) {\n\t\n}"},
+		{"trigger": "else", "body": "else {\n\t{{cursor}}\n}"},
+		{"trigger": "unless", "body": "unless ({{cursor}}) {\n\t\n}"},
+		{"trigger": "foreach", "body": "foreach my $item ({{cursor}}) {\n\t\n}"},
+		{"trigger": "while", "body": "while ({{cursor}}) {\n\t\n}"},
+		{"trigger": "sub", "body": "sub {{cursor}} {\n\tmy (@args) = @_;\n\t\n}"}
+	]
+}

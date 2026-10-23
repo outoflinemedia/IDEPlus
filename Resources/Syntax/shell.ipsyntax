@@ -1,0 +1,16 @@
+{
+	"name": "Shell",
+	"extensions": [
+		"sh", "bash", "zsh", "command", "ksh", "fish", ".bashrc", ".zshrc", ".profile", ".bash_profile",
+		"dockerfile", "makefile"
+	],
+	"patterns": [
+		{"color": "comment", "regex": "(?<![\\w$\\\\])#[^\\n]*"},
+		{"color": "string", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"?"},
+		{"color": "string", "regex": "'(?:[^'\\\\\\n]|\\\\.)*'?"},
+		{"color": "attribute", "regex": "\\$(?:\\{[^}\\n]*\\}|[A-Za-z_]\\w*|[0-9@#?*!$-])"},
+		{"color": "keyword", "regex": "\\b(?:if|then|else|elif|fi|case|esac|for|while|until|do|done|in|function|select|return|exit|break|continue|local|export|readonly|declare|unset|shift|source|alias|echo|cd|set|trap|eval|exec|true|false|FROM|RUN|CMD|COPY|ADD|ENV|WORKDIR|EXPOSE|ENTRYPOINT|ARG)\\b"},
+		{"color": "number", "regex": "\\b\\d+\\b"}
+	],
+	"commentToggle": {"line": "#"}
+}

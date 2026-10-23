@@ -1,0 +1,82 @@
+{
+	"name": "Python",
+	"extensions": ["py", "pyw", "pyi"],
+	"delimiters": ",(){}[]-+*%/=\"'~!&|<>?:;.^@",
+	"lineComments": ["#"],
+	"patterns": [
+		{"color": "string", "regex": "\"\"\"[\\s\\S]*?(?:\"\"\"|\\z)"},
+		{"color": "string", "regex": "'''[\\s\\S]*?(?:'''|\\z)"},
+		{"color": "string", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"?"},
+		{"color": "string", "regex": "'(?:[^'\\\\\\n]|\\\\.)*'?"},
+		{"color": "preprocessor", "regex": "^[ \\t]*@[\\w.]+"}
+	],
+	"keywordGroups": [
+		{
+			"name": "Keywords",
+			"color": "keyword",
+			"words": [
+				"False", "None", "True", "_", "and", "as", "assert", "async", "await", "break", "case", "class", "cls",
+				"continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import",
+				"in", "is", "lambda", "match", "nonlocal", "not", "or", "pass", "raise", "return", "self", "try",
+				"type", "while", "with", "yield"
+			]
+		},
+		{
+			"name": "Built-in functions and types",
+			"color": "type",
+			"words": [
+				"abs", "aiter", "all", "anext", "any", "ascii", "bin", "bool", "breakpoint", "bytearray", "bytes",
+				"callable", "chr", "classmethod", "compile", "complex", "copyright", "credits", "delattr", "dict",
+				"dir", "divmod", "enumerate", "eval", "exec", "exit", "filter", "float", "format", "frozenset",
+				"getattr", "globals", "hasattr", "hash", "help", "hex", "id", "input", "int", "isinstance",
+				"issubclass", "iter", "len", "license", "list", "locals", "map", "max", "memoryview", "min", "next",
+				"object", "oct", "open", "ord", "pow", "print", "property", "quit", "range", "repr", "reversed",
+				"round", "set", "setattr", "slice", "sorted", "staticmethod", "str", "sum", "super", "tuple", "type",
+				"vars", "zip"
+			]
+		},
+		{
+			"name": "Built-in exceptions",
+			"color": "type",
+			"words": [
+				"ArithmeticError", "AssertionError", "AttributeError", "BaseException", "BaseExceptionGroup",
+				"BlockingIOError", "BrokenPipeError", "BufferError", "BytesWarning", "ChildProcessError",
+				"ConnectionAbortedError", "ConnectionError", "ConnectionRefusedError", "ConnectionResetError",
+				"DeprecationWarning", "EOFError", "EncodingWarning", "EnvironmentError", "Exception", "ExceptionGroup",
+				"FileExistsError", "FileNotFoundError", "FloatingPointError", "FutureWarning", "GeneratorExit",
+				"IOError", "ImportError", "ImportWarning", "IndentationError", "IndexError", "InterruptedError",
+				"IsADirectoryError", "KeyError", "KeyboardInterrupt", "LookupError", "MemoryError",
+				"ModuleNotFoundError", "NameError", "NotADirectoryError", "NotImplementedError", "OSError",
+				"OverflowError", "PendingDeprecationWarning", "PermissionError", "ProcessLookupError",
+				"PythonFinalizationError", "RecursionError", "ReferenceError", "ResourceWarning", "RuntimeError",
+				"RuntimeWarning", "StopAsyncIteration", "StopIteration", "SyntaxError", "SyntaxWarning", "SystemError",
+				"SystemExit", "TabError", "TimeoutError", "TypeError", "UnboundLocalError", "UnicodeDecodeError",
+				"UnicodeEncodeError", "UnicodeError", "UnicodeTranslateError", "UnicodeWarning", "UserWarning",
+				"ValueError", "Warning", "ZeroDivisionError"
+			]
+		},
+		{
+			"name": "Special methods",
+			"color": "attribute",
+			"words": [
+				"__abs__", "__abstractmethods__", "__add__", "__aenter__", "__aexit__", "__all__", "__and__",
+				"__annotate__", "__annotations__", "__base__", "__bases__", "__basicsize__", "__bool__", "__call__",
+				"__ceil__", "__class__", "__class_getitem__", "__contains__", "__delattr__", "__delitem__", "__dict__",
+				"__dictoffset__", "__dir__", "__divmod__", "__doc__", "__enter__", "__eq__", "__exit__", "__file__",
+				"__flags__", "__float__", "__floor__", "__floordiv__", "__format__", "__ge__", "__getattribute__",
+				"__getitem__", "__getnewargs__", "__getstate__", "__gt__", "__hash__", "__iadd__", "__imul__",
+				"__index__", "__init__", "__init_subclass__", "__instancecheck__", "__int__", "__invert__", "__ior__",
+				"__itemsize__", "__iter__", "__le__", "__len__", "__lshift__", "__lt__", "__main__", "__mod__",
+				"__module__", "__mro__", "__mul__", "__name__", "__ne__", "__neg__", "__new__", "__next__", "__or__",
+				"__pos__", "__pow__", "__prepare__", "__qualname__", "__radd__", "__rand__", "__rdivmod__",
+				"__reduce__", "__reduce_ex__", "__repr__", "__reversed__", "__rfloordiv__", "__rlshift__", "__rmod__",
+				"__rmul__", "__ror__", "__round__", "__rpow__", "__rrshift__", "__rshift__", "__rsub__",
+				"__rtruediv__", "__rxor__", "__setattr__", "__setitem__", "__sizeof__", "__slots__", "__str__",
+				"__sub__", "__subclasscheck__", "__subclasses__", "__subclasshook__", "__text_signature__",
+				"__truediv__", "__trunc__", "__type_params__", "__weakrefoffset__", "__xor__"
+			]
+		}
+	],
+	"numbers": true,
+	"commentToggle": {"line": "#"}
+}

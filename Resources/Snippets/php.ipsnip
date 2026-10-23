@@ -1,0 +1,20 @@
+{
+	"name": "PHP",
+	"language": "PHP",
+	"caseSensitive": false,
+	"snippets": [
+		{"trigger": "if", "body": "if ({{cursor}}) {\n\t\n}"},
+		{"trigger": "else", "body": "else {\n\t{{cursor}}\n}"},
+		{"trigger": "elseif", "body": "elseif ({{cursor}}) {\n\t\n}"},
+		{"trigger": "for", "body": "for ($i = 0; $i < {{cursor}}; $i++) {\n\t\n}"},
+		{"trigger": "foreach", "body": "foreach ({{cursor}} as $key => $value) {\n\t\n}"},
+		{"trigger": "while", "body": "while ({{cursor}}) {\n\t\n}"},
+		{"trigger": "do", "body": "do {\n\t{{cursor}}\n} while ();"},
+		{"trigger": "switch", "body": "switch ({{cursor}}) {\n\tcase '':\n\t\tbreak;\n\tdefault:\n\t\tbreak;\n}"},
+		{"trigger": "function", "body": "function {{cursor}}() {\n\t\n}"},
+		{"trigger": "class", "body": "class {{cursor}}\n{\n\tpublic function __construct()\n\t{\n\t\t\n\t}\n}"},
+		{"trigger": "try", "body": "try {\n\t{{cursor}}\n} catch (Exception $e) {\n\t\n}"},
+		{"trigger": "vd", "body": "var_dump({{cursor}});"},
+		{"trigger": "pre", "body": "echo '<pre>' . print_r({{cursor}}, true) . '</pre>';"}
+	]
+}

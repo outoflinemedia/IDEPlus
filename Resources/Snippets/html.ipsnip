@@ -1,0 +1,10 @@
+{
+	"name": "HTML",
+	"language": "HTML / XML",
+	"caseSensitive": false,
+	"snippets": [
+		{"trigger": "html5", "lineStart": true, "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"utf-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\t<title>{{cursor}}</title>\n</head>\n<body>\n\t\n</body>\n</html>"},
+		{"trigger": "css", "body": "<link rel=\"stylesheet\" href=\"{{cursor}}\">"},
+		{"trigger": "js", "body": "<script src=\"{{cursor}}\"></script>"}
+	]
+}

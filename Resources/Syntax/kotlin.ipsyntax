@@ -1,0 +1,16 @@
+{
+	"name": "Kotlin / Groovy / Scala",
+	"extensions": ["kt", "kts", "groovy", "scala"],
+	"patterns": [
+		{"color": "comment", "regex": "/\\*[\\s\\S]*?(?:\\*/|\\z)"},
+		{"color": "comment", "regex": "//[^\\n]*"},
+		{"color": "string", "regex": "\"\"\"[\\s\\S]*?(?:\"\"\"|\\z)"},
+		{"color": "string", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"?"},
+		{"color": "string", "regex": "'(?:[^'\\\\\\n]|\\\\.)*'?"},
+		{"color": "preprocessor", "regex": "@\\w+"},
+		{"color": "keyword", "regex": "\\b(?:abstract|assert|break|case|catch|class|const|continue|default|do|else|enum|extends|final|finally|for|goto|if|implements|import|instanceof|interface|native|new|package|private|protected|public|return|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile|while|true|false|null|var|val|fun|object|when|record|sealed|override)\\b"},
+		{"color": "type", "regex": "\\b(?:boolean|byte|char|double|float|int|long|short|void|String|Object|Integer|Long|Double|Boolean|List|Map|Set|Int|Unit|Any)\\b"},
+		{"color": "number", "regex": "\\b(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)[uUlLfFnm]*\\b"}
+	],
+	"commentToggle": {"line": "//", "block": ["/*", "*/"]}
+}

@@ -1,0 +1,54 @@
+{
+	"name": "JavaScript",
+	"extensions": ["js", "mjs", "cjs", "jsx"],
+	"delimiters": ",(){}[]-+*%/=\"'~!&|<>?:;.^`",
+	"lineComments": ["//"],
+	"blockComments": [["/*", "*/"]],
+	"quotes": ["'", "\""],
+	"escape": "\\",
+	"quotesMustClose": true,
+	"regexLiterals": true,
+	"patterns": [
+		{"color": "string", "regex": "`(?:[^`\\\\]|\\\\.)*`?"}
+	],
+	"keywordGroups": [
+		{
+			"name": "Keywords",
+			"color": "keyword",
+			"words": [
+				"arguments", "async", "await", "break", "case", "catch", "class", "const", "continue", "debugger",
+				"default", "delete", "do", "else", "enum", "export", "extends", "false", "finally", "for", "from",
+				"function", "get", "if", "implements", "import", "in", "Infinity", "instanceof", "interface", "let",
+				"NaN", "new", "null", "of", "package", "private", "protected", "public", "return", "set", "static",
+				"super", "switch", "this", "throw", "true", "try", "typeof", "undefined", "var", "void", "while",
+				"with", "yield"
+			]
+		},
+		{
+			"name": "Global objects",
+			"color": "type",
+			"words": [
+				"AggregateError", "Array", "ArrayBuffer", "Atomics", "BigInt", "BigInt64Array", "BigUint64Array",
+				"Boolean", "DataView", "Date", "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent",
+				"Error", "EvalError", "FinalizationRegistry", "Float32Array", "Float64Array", "Function", "globalThis",
+				"Int16Array", "Int32Array", "Int8Array", "Intl", "isFinite", "isNaN", "JSON", "Map", "Math", "Number",
+				"Object", "parseFloat", "parseInt", "Promise", "Proxy", "RangeError", "ReferenceError", "Reflect",
+				"RegExp", "Set", "SharedArrayBuffer", "String", "Symbol", "SyntaxError", "TypeError", "Uint16Array",
+				"Uint32Array", "Uint8Array", "Uint8ClampedArray", "URIError", "WeakMap", "WeakRef", "WeakSet"
+			]
+		},
+		{
+			"name": "Browser",
+			"color": "type",
+			"words": [
+				"alert", "Blob", "clearInterval", "clearTimeout", "confirm", "console", "CustomEvent", "document",
+				"Element", "Event", "fetch", "File", "FileReader", "FormData", "history", "HTMLElement", "Image",
+				"localStorage", "location", "navigator", "Node", "NodeList", "prompt", "requestAnimationFrame",
+				"sessionStorage", "setInterval", "setTimeout", "URL", "URLSearchParams", "WebSocket", "window",
+				"Worker", "XMLHttpRequest"
+			]
+		}
+	],
+	"numbers": true,
+	"commentToggle": {"line": "//", "block": ["/*", "*/"]}
+}

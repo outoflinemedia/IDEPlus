@@ -1,0 +1,15 @@
+{
+	"name": "Swift",
+	"extensions": ["swift"],
+	"patterns": [
+		{"color": "comment", "regex": "/\\*[\\s\\S]*?(?:\\*/|\\z)"},
+		{"color": "comment", "regex": "//[^\\n]*"},
+		{"color": "string", "regex": "\"\"\"[\\s\\S]*?(?:\"\"\"|\\z)"},
+		{"color": "string", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"?"},
+		{"color": "preprocessor", "regex": "[@#][A-Za-z]\\w*"},
+		{"color": "keyword", "regex": "\\b(?:associatedtype|break|case|catch|class|continue|default|defer|deinit|do|else|enum|extension|fallthrough|fileprivate|for|func|guard|if|import|in|init|inout|internal|is|let|nil|open|operator|private|protocol|public|repeat|rethrows|return|self|Self|static|struct|subscript|super|switch|throw|throws|true|false|try|typealias|var|where|while|async|await|actor|some|any|lazy|weak|unowned|override|final|mutating|convenience|required|get|set|didSet|willSet)\\b"},
+		{"color": "type", "regex": "\\b(?:Int|Double|Float|String|Bool|Character|Array|Dictionary|Set|Optional|Any|AnyObject|Void|UInt|Int64|Int32|UInt8|CGFloat|CGRect|CGPoint|CGSize|Data|URL|Error|Date)\\b"},
+		{"color": "number", "regex": "\\b(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)[uUlLfFnm]*\\b"}
+	],
+	"commentToggle": {"line": "//", "block": ["/*", "*/"]}
+}
