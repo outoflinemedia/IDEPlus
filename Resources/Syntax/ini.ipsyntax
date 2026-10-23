@@ -1,0 +1,14 @@
+{
+	"name": "INI / Config",
+	"extensions": ["ini", "cfg", "conf", "properties", "toml", "env", "editorconfig", "gitconfig"],
+	"patterns": [
+		{"color": "comment", "regex": "^[ \\t]*[;#][^\\n]*"},
+		{"color": "tag", "regex": "^[ \\t]*\\[[^\\]\\n]*\\]"},
+		{"color": "attribute", "regex": "^[ \\t]*[\\w.\\-]+(?=[ \\t]*[=:])"},
+		{"color": "string", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"?"},
+		{"color": "string", "regex": "'(?:[^'\\\\\\n]|\\\\.)*'?"},
+		{"color": "keyword", "regex": "\\b(?:true|false|yes|no|on|off)\\b"},
+		{"color": "number", "regex": "\\b(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)[uUlLfFnm]*\\b"}
+	],
+	"commentToggle": {"line": "#"}
+}

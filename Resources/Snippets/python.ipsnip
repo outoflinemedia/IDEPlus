@@ -1,0 +1,16 @@
+{
+	"name": "Python",
+	"language": "Python",
+	"snippets": [
+		{"trigger": "if", "lineStart": true, "body": "if {{cursor}}:\n\t"},
+		{"trigger": "elif", "lineStart": true, "body": "elif {{cursor}}:\n\t"},
+		{"trigger": "else", "lineStart": true, "body": "else:\n\t{{cursor}}"},
+		{"trigger": "for", "lineStart": true, "body": "for {{cursor}} in :\n\t"},
+		{"trigger": "while", "lineStart": true, "body": "while {{cursor}}:\n\t"},
+		{"trigger": "def", "lineStart": true, "body": "def {{cursor}}():\n\t"},
+		{"trigger": "class", "lineStart": true, "body": "class {{cursor}}:\n\tdef __init__(self):\n\t\t"},
+		{"trigger": "try", "lineStart": true, "body": "try:\n\t{{cursor}}\nexcept Exception as error:\n\t"},
+		{"trigger": "with", "lineStart": true, "body": "with {{cursor}} as f:\n\t"},
+		{"trigger": "main", "lineStart": true, "body": "if __name__ == \"__main__\":\n\t{{cursor}}"}
+	]
+}

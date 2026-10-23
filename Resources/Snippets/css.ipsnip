@@ -1,0 +1,10 @@
+{
+	"name": "CSS",
+	"language": "CSS",
+	"caseSensitive": false,
+	"snippets": [
+		{"trigger": "med", "body": "@media (max-width: {{cursor}}px) {\n\t\n}"},
+		{"trigger": "kf", "body": "@keyframes {{cursor}} {\n\tfrom {\n\t\t\n\t}\n\tto {\n\t\t\n\t}\n}"},
+		{"trigger": "fc", "body": "display: flex;\njustify-content: center;\nalign-items: center;{{cursor}}"}
+	]
+}

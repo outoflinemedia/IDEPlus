@@ -1,0 +1,14 @@
+{
+	"name": "SQL",
+	"language": "SQL",
+	"caseSensitive": false,
+	"snippets": [
+		{"trigger": "sel", "body": "SELECT {{cursor}}\nFROM \nWHERE ;"},
+		{"trigger": "ins", "body": "INSERT INTO {{cursor}} ()\nVALUES ();"},
+		{"trigger": "upd", "body": "UPDATE {{cursor}}\nSET \nWHERE ;"},
+		{"trigger": "del", "body": "DELETE FROM {{cursor}}\nWHERE ;"},
+		{"trigger": "crt", "body": "CREATE TABLE {{cursor}} (\n\tid INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,\n\t\n);"},
+		{"trigger": "ij", "body": "INNER JOIN {{cursor}} ON "},
+		{"trigger": "lj", "body": "LEFT JOIN {{cursor}} ON "}
+	]
+}

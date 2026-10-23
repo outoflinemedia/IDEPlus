@@ -1,0 +1,13 @@
+{
+	"name": "JSON",
+	"extensions": ["json", "jsonc", "geojson", "webmanifest", "c3proj"],
+	"patterns": [
+		{"color": "comment", "regex": "/\\*[\\s\\S]*?(?:\\*/|\\z)"},
+		{"color": "comment", "regex": "//[^\\n]*"},
+		{"color": "attribute", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"(?=\\s*:)"},
+		{"color": "string", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"?"},
+		{"color": "keyword", "regex": "\\b(?:true|false|null)\\b"},
+		{"color": "number", "regex": "-?\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"}
+	],
+	"commentToggle": {"line": "//", "block": ["/*", "*/"]}
+}

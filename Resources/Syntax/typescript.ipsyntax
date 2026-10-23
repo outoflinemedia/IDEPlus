@@ -1,0 +1,15 @@
+{
+	"name": "TypeScript / ActionScript",
+	"extensions": ["ts", "tsx", "mts", "cts", "as"],
+	"patterns": [
+		{"color": "comment", "regex": "/\\*[\\s\\S]*?(?:\\*/|\\z)"},
+		{"color": "comment", "regex": "//[^\\n]*"},
+		{"color": "string", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"?"},
+		{"color": "string", "regex": "'(?:[^'\\\\\\n]|\\\\.)*'?"},
+		{"color": "string", "regex": "`(?:[^`\\\\]|\\\\.)*`?"},
+		{"color": "keyword", "regex": "\\b(?:async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|from|function|if|import|in|instanceof|let|new|of|return|static|super|switch|this|throw|try|typeof|var|void|while|with|yield|true|false|null|undefined|NaN|Infinity|interface|type|enum|implements|private|public|protected|readonly|as|namespace|declare|abstract|get|set)\\b"},
+		{"color": "type", "regex": "\\b(?:Array|Boolean|Date|Error|Function|JSON|Map|Math|Number|Object|Promise|RegExp|Set|String|Symbol|console|window|document|globalThis|string|number|boolean|any|unknown|never|bigint)\\b"},
+		{"color": "number", "regex": "\\b(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)[uUlLfFnm]*\\b"}
+	],
+	"commentToggle": {"line": "//", "block": ["/*", "*/"]}
+}

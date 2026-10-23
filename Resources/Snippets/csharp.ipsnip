@@ -1,0 +1,15 @@
+{
+	"name": "C#",
+	"language": "C#",
+	"snippets": [
+		{"trigger": "if", "body": "if ({{cursor}})\n{\n\t\n}"},
+		{"trigger": "else", "body": "else\n{\n\t{{cursor}}\n}"},
+		{"trigger": "for", "body": "for (int i = 0; i < {{cursor}}; i++)\n{\n\t\n}"},
+		{"trigger": "foreach", "body": "foreach (var item in {{cursor}})\n{\n\t\n}"},
+		{"trigger": "while", "body": "while ({{cursor}})\n{\n\t\n}"},
+		{"trigger": "switch", "body": "switch ({{cursor}})\n{\n\tcase 0:\n\t\tbreak;\n\tdefault:\n\t\tbreak;\n}"},
+		{"trigger": "class", "body": "public class {{cursor}}\n{\n\t\n}"},
+		{"trigger": "try", "body": "try\n{\n\t{{cursor}}\n}\ncatch (Exception ex)\n{\n\t\n}"},
+		{"trigger": "cw", "body": "Console.WriteLine({{cursor}});"}
+	]
+}

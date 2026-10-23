@@ -1,0 +1,15 @@
+{
+	"name": "Markdown",
+	"extensions": ["md", "markdown", "mdown", "mkd"],
+	"patterns": [
+		{"color": "string", "regex": "```[\\s\\S]*?(?:```|\\z)"},
+		{"color": "comment", "regex": "<!--[\\s\\S]*?(?:-->|\\z)"},
+		{"color": "heading", "regex": "^#{1,6}[ \\t][^\\n]*"},
+		{"color": "comment", "regex": "^>[^\\n]*"},
+		{"color": "keyword", "regex": "^[ \\t]*(?:[-*+]|\\d+\\.)(?=[ \\t])"},
+		{"color": "string", "regex": "`[^`\\n]+`"},
+		{"color": "keyword", "regex": "\\*\\*[^*\\n]+\\*\\*|__[^_\\n]+__"},
+		{"color": "tag", "regex": "!?\\[[^\\]\\n]*\\]\\([^)\\n]*\\)"}
+	],
+	"commentToggle": {"block": ["<!--", "-->"]}
+}

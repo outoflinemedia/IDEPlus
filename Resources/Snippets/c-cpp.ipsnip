@@ -1,0 +1,14 @@
+{
+	"name": "C / C++",
+	"language": "C / C++ / Objective-C",
+	"snippets": [
+		{"trigger": "if", "body": "if ({{cursor}}) {\n\t\n}"},
+		{"trigger": "else", "body": "else {\n\t{{cursor}}\n}"},
+		{"trigger": "for", "body": "for (int i = 0; i < {{cursor}}; i++) {\n\t\n}"},
+		{"trigger": "while", "body": "while ({{cursor}}) {\n\t\n}"},
+		{"trigger": "do", "body": "do {\n\t{{cursor}}\n} while ();"},
+		{"trigger": "switch", "body": "switch ({{cursor}}) {\n\tcase 0:\n\t\tbreak;\n\tdefault:\n\t\tbreak;\n}"},
+		{"trigger": "main", "lineStart": true, "body": "int main(int argc, char *argv[]) {\n\t{{cursor}}\n\treturn 0;\n}"},
+		{"trigger": "struct", "body": "struct {{cursor}} {\n\t\n};"}
+	]
+}

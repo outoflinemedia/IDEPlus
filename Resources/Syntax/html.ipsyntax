@@ -1,0 +1,22 @@
+{
+	"name": "HTML / XML",
+	"extensions": [
+		"html", "htm", "xhtml", "xml", "svg", "plist", "xsl", "xslt", "vue", "svelte", "aspx", "rss", "atom"
+	],
+	"patterns": [
+		{"color": "comment", "regex": "<!--[\\s\\S]*?(?:-->|\\z)"},
+		{"color": "preprocessor", "regex": "<\\?[\\s\\S]*?(?:\\?>|\\z)"},
+		{"color": "preprocessor", "regex": "<![A-Za-z][^>\\n]*>"},
+		{"color": "string", "regex": "(?<==)\"[^\"]*\""},
+		{"color": "string", "regex": "(?<==)'[^']*'"},
+		{"color": "tag", "regex": "</?[A-Za-z][\\w:.-]*|/?>"},
+		{"color": "attribute", "regex": "\\b[A-Za-z_:@][\\w:.-]*(?=\\s*=)"},
+		{"color": "number", "regex": "&#?\\w+;"}
+	],
+	"markup": true,
+	"embedded": [
+		{"start": "(?i)<script\\b[^>]*>", "end": "(?i)</script\\s*>", "language": "JavaScript"},
+		{"start": "(?i)<style\\b[^>]*>", "end": "(?i)</style\\s*>", "language": "CSS"}
+	],
+	"commentToggle": {"block": ["<!--", "-->"]}
+}

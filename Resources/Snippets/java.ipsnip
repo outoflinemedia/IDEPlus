@@ -1,0 +1,16 @@
+{
+	"name": "Java",
+	"language": "Java",
+	"snippets": [
+		{"trigger": "if", "body": "if ({{cursor}}) {\n\t\n}"},
+		{"trigger": "else", "body": "else {\n\t{{cursor}}\n}"},
+		{"trigger": "for", "body": "for (int i = 0; i < {{cursor}}; i++) {\n\t\n}"},
+		{"trigger": "foreach", "body": "for (var item : {{cursor}}) {\n\t\n}"},
+		{"trigger": "while", "body": "while ({{cursor}}) {\n\t\n}"},
+		{"trigger": "switch", "body": "switch ({{cursor}}) {\n\tcase 0:\n\t\tbreak;\n\tdefault:\n\t\tbreak;\n}"},
+		{"trigger": "class", "body": "public class {{cursor}} {\n\t\n}"},
+		{"trigger": "try", "body": "try {\n\t{{cursor}}\n} catch (Exception e) {\n\t\n}"},
+		{"trigger": "main", "lineStart": true, "body": "public static void main(String[] args) {\n\t{{cursor}}\n}"},
+		{"trigger": "sout", "body": "System.out.println({{cursor}});"}
+	]
+}

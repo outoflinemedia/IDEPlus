@@ -1,0 +1,15 @@
+{
+	"name": "Go",
+	"extensions": ["go"],
+	"patterns": [
+		{"color": "comment", "regex": "/\\*[\\s\\S]*?(?:\\*/|\\z)"},
+		{"color": "comment", "regex": "//[^\\n]*"},
+		{"color": "string", "regex": "\"(?:[^\"\\\\\\n]|\\\\.)*\"?"},
+		{"color": "string", "regex": "`[^`]*`?"},
+		{"color": "string", "regex": "'(?:[^'\\\\\\n]|\\\\.)*'?"},
+		{"color": "keyword", "regex": "\\b(?:break|case|chan|const|continue|default|defer|else|fallthrough|for|func|go|goto|if|import|interface|map|package|range|return|select|struct|switch|type|var|true|false|nil|iota)\\b"},
+		{"color": "type", "regex": "\\b(?:bool|byte|complex64|complex128|error|float32|float64|int|int8|int16|int32|int64|rune|string|uint|uint8|uint16|uint32|uint64|uintptr|any)\\b"},
+		{"color": "number", "regex": "\\b(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)[uUlLfFnm]*\\b"}
+	],
+	"commentToggle": {"line": "//", "block": ["/*", "*/"]}
+}

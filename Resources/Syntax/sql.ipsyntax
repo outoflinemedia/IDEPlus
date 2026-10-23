@@ -1,0 +1,57 @@
+{
+	"name": "SQL",
+	"extensions": ["sql", "ddl", "dml"],
+	"caseSensitive": false,
+	"delimiters": ",(){}[]-+*%/=\"'~!&|<>?:;.^`@",
+	"lineComments": ["--", "#"],
+	"blockComments": [["/*", "*/"]],
+	"quotes": ["'", "\"", "`"],
+	"escape": "\\",
+	"keywordGroups": [
+		{
+			"name": "Keywords",
+			"color": "keyword",
+			"words": [
+				"ADD", "AFTER", "ALL", "ALTER", "ANALYZE", "AND", "ANY", "AS", "ASC", "AUTO_INCREMENT", "BEGIN",
+				"BETWEEN", "BY", "CALL", "CASCADE", "CASE", "CHANGE", "CHARACTER", "CHARSET", "CHECK", "CLOSE",
+				"COLLATE", "COLUMN", "COMMENT", "COMMIT", "CONSTRAINT", "CONTINUE", "CREATE", "CROSS", "CURRENT_DATE",
+				"CURRENT_TIME", "CURRENT_TIMESTAMP", "CURSOR", "DATABASE", "DECLARE", "DEFAULT", "DELETE", "DELIMITER",
+				"DESC", "DESCRIBE", "DISTINCT", "DO", "DROP", "DUPLICATE", "ELSE", "ELSEIF", "END", "ENGINE", "ESCAPE",
+				"EXCEPT", "EXISTS", "EXIT", "EXPLAIN", "FALSE", "FETCH", "FIRST", "FOR", "FOREIGN", "FROM", "FULL",
+				"FUNCTION", "GRANT", "GROUP", "HANDLER", "HAVING", "IF", "IGNORE", "IN", "INDEX", "INNER", "INSERT",
+				"INTERSECT", "INTO", "IS", "ITERATE", "JOIN", "KEY", "LATERAL", "LEAVE", "LEFT", "LIKE", "LIMIT",
+				"LOCK", "LOOP", "MODIFY", "NATURAL", "NOT", "NULL", "OFFSET", "ON", "OPEN", "OPTIMIZE", "OR", "ORDER",
+				"OUTER", "OVER", "PARTITION", "PRIMARY", "PROCEDURE", "RECURSIVE", "REFERENCES", "RENAME", "REPAIR",
+				"REPEAT", "REPLACE", "RETURN", "RETURNS", "REVOKE", "RIGHT", "ROLLBACK", "ROW", "ROWS", "SCHEMA",
+				"SELECT", "SET", "SHOW", "SIGNAL", "TABLE", "TEMPORARY", "THEN", "TO", "TOP", "TRANSACTION", "TRIGGER",
+				"TRUE", "TRUNCATE", "UNION", "UNIQUE", "UNLOCK", "UNSIGNED", "UNTIL", "UPDATE", "USE", "USING",
+				"VALUES", "VIEW", "WHEN", "WHERE", "WHILE", "WINDOW", "WITH", "ZEROFILL"
+			]
+		},
+		{
+			"name": "Functions",
+			"color": "type",
+			"words": [
+				"ABS", "AVG", "CAST", "CEIL", "CEILING", "CHAR_LENGTH", "COALESCE", "CONCAT", "CONCAT_WS", "CONVERT",
+				"COUNT", "CURDATE", "CURTIME", "DATE_ADD", "DATE_FORMAT", "DATE_SUB", "DATEDIFF", "DAY", "DENSE_RANK",
+				"FIRST_VALUE", "FLOOR", "FORMAT", "FROM_UNIXTIME", "GROUP_CONCAT", "HOUR", "IFNULL", "INSTR",
+				"JSON_ARRAY", "JSON_EXTRACT", "JSON_OBJECT", "LAG", "LAST_INSERT_ID", "LAST_VALUE", "LEAD", "LENGTH",
+				"LOCATE", "LOWER", "LPAD", "LTRIM", "MAX", "MD5", "MIN", "MINUTE", "MOD", "MONTH", "NOW", "NULLIF",
+				"POWER", "RAND", "RANK", "REVERSE", "ROUND", "ROW_NUMBER", "RPAD", "RTRIM", "SECOND", "SHA1", "SHA2",
+				"SQRT", "STR_TO_DATE", "SUBSTR", "SUBSTRING", "SUM", "TRIM", "UNIX_TIMESTAMP", "UPPER", "UUID", "YEAR"
+			]
+		},
+		{
+			"name": "Data types",
+			"color": "attribute",
+			"words": [
+				"BIGINT", "BINARY", "BIT", "BLOB", "BOOL", "BOOLEAN", "CHAR", "DATE", "DATETIME", "DECIMAL", "DOUBLE",
+				"ENUM", "FLOAT", "INT", "INTEGER", "JSON", "LONGBLOB", "LONGTEXT", "MEDIUMBLOB", "MEDIUMINT",
+				"MEDIUMTEXT", "NUMERIC", "REAL", "SERIAL", "SMALLINT", "TEXT", "TIME", "TIMESTAMP", "TINYBLOB",
+				"TINYINT", "TINYTEXT", "VARBINARY", "VARCHAR"
+			]
+		}
+	],
+	"numbers": true,
+	"commentToggle": {"line": "--", "block": ["/*", "*/"]}
+}
