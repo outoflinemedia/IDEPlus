@@ -4,6 +4,10 @@ What changed in each version of IDEPlus. Newest first.
 
 Version numbers are `major.minor.fix`: the first changes for big changes, the middle for new features, the last for fixes only. The build number (shown in IDEPlus > About IDEPlus) is set automatically by `build.sh`.
 
+## Unreleased
+
+- The FTP site menu starts on "Choose a site…" and picking a site connects, so the menu always shows the site the tree is on. Nothing connects at launch. Add or Edit Sites… is at the bottom of the menu; the Connect and ⚙ buttons are gone.
+
 ## 1.0.0 (2026-10-22)
 
 The first release.
