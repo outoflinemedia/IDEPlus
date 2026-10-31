@@ -13,6 +13,8 @@ final class EditorDocument {
 	var url: URL?
 	var remote: RemoteFile?
 	var uploadState = UploadState.idle
+	/// Deleted from the server in the FTP tree while open: the next save asks before putting it back.
+	var deletedOnServer = false
 	var encoding: FileEncoding = .utf8
 	var lineEnding: LineEnding = .lf
 	var isDirty = false

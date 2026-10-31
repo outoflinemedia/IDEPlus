@@ -253,6 +253,23 @@ enum SelfTest {
 		SavedData.clearProblems()
 	}
 
+	private static func saveToFTPTests() {
+		check("save path in folder", FTPClient.savePath(folder: "public_html/blog", name: "contact.php") ?? "nil", "public_html/blog/contact.php")
+		check("save path with subfolder", FTPClient.savePath(folder: "public_html", name: " forms/contact.php ") ?? "nil", "public_html/forms/contact.php")
+		check("save path at login folder", FTPClient.savePath(folder: "", name: "/a.txt") ?? "nil", "a.txt")
+		check("save path rejects ..", FTPClient.savePath(folder: "public_html", name: "../secret.php") ?? "nil", "nil")
+		check("rename the file itself", FTPClient.renamed("public_html/header.php", from: "public_html/header.php", to: "public_html/header-old.php") ?? "nil", "public_html/header-old.php")
+		check("rename the folder it's in", FTPClient.renamed("public_html/blog/a.php", from: "public_html/blog", to: "public_html/news") ?? "nil", "public_html/news/a.php")
+		check("similar name isn't renamed", FTPClient.renamed("public_html/blog2/a.php", from: "public_html/blog", to: "public_html/news") ?? "nil", "nil")
+		let favs = FavoritesStore(persistent: false)
+		let p = favs.newProject(named: "Site")
+		favs.add([("s1", "public_html/blog/a.php", "x"), ("s1", "public_html/header.php", "x"), ("s2", "public_html/blog/a.php", "y")], to: p)
+		favs.followRename(siteID: "s1", from: "public_html/blog", to: "public_html/news")
+		favs.followRename(siteID: "s1", from: "public_html/header.php", to: "public_html/header-old.php")
+		check("favorites follow renames", p.items.map(\.path).joined(separator: ","), "public_html/news/a.php,public_html/header-old.php,public_html/blog/a.php")
+		check("save path rejects empty", FTPClient.savePath(folder: "public_html", name: "  ") ?? "nil", "nil")
+	}
+
 	private static func spaceRocksTests() {
 		let v = EmptyStateView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
 		v.layout()
@@ -356,6 +373,12 @@ enum SelfTest {
 		_ = ok("ftp save uploads", client.uploadSync(cache, to: "site/new dir/up.php"))
 		_ = ok("ftp download again", client.downloadSync("site/new dir/up.php", to: back))
 		check("ftp server has edit", (try? String(contentsOf: back, encoding: .utf8)) ?? "", "<?php echo 'changed'; ?>\n")
+
+		// Save to FTP asks before replacing only when something is already there.
+		check("ftp kind of existing file", "\(client.kindSync("site/new dir/up.php"))", "file")
+		check("ftp kind of folder", "\(client.kindSync("site/new dir"))", "folder")
+		check("ftp kind of new file", "\(client.kindSync("site/new dir/brand-new.php"))", "missing")
+		check("ftp kind in missing folder", "\(client.kindSync("site/no such dir/x.php"))", "unknown")
 
 		_ = ok("ftp mkdir", client.commandSync(["MKD site/made"]))
 		_ = ok("ftp rename", client.commandSync(["RNFR site/new dir/up.php", "RNTO site/made/renamed.php"]))
@@ -501,6 +524,7 @@ enum SelfTest {
 		snippetTests()
 		favoritesTests()
 		spaceRocksTests()
+		saveToFTPTests()
 		savedDataTests()
 		shippedSnippetTests()
 		if let spec = ProcessInfo.processInfo.environment["IDEPLUS_FTP_TEST"] { ftpLiveTests(spec) }

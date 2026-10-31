@@ -106,6 +106,40 @@ final class FTPClient {
 		dir.isEmpty ? name : dir + "/" + name
 	}
 
+	/// Where Save to FTP puts a file: `name` inside `folder`. The name may include subfolders ("forms/contact.php").
+	/// Nil for a name that is empty or uses "." or "..".
+	static func savePath(folder: String, name: String) -> String? {
+		let parts = name.trimmingCharacters(in: .whitespaces).split(separator: "/", omittingEmptySubsequences: true).map(String.init)
+		guard !parts.isEmpty, !parts.contains(where: { $0 == "." || $0 == ".." || $0.trimmingCharacters(in: .whitespaces).isEmpty }) else { return nil }
+		return parts.reduce(folder) { join($0, $1) }
+	}
+
+	/// A path after `old` was renamed to `new`: the item itself, or anything inside it when it's a folder.
+	/// Nil when the path isn't affected.
+	static func renamed(_ path: String, from old: String, to new: String) -> String? {
+		if path == old { return new }
+		if path.hasPrefix(old + "/") { return new + path.dropFirst(old.count) }
+		return nil
+	}
+
+	/// `unknown`: its folder couldn't be listed (the folder is missing, or the server can't be reached).
+	enum PathKind { case missing, file, folder, unknown }
+
+	/// What is at a path on the server, found by listing its folder.
+	func kindSync(_ path: String) -> PathKind {
+		let name = (path as NSString).lastPathComponent
+		guard case let .success(entries) = listSync((path as NSString).deletingLastPathComponent) else { return .unknown }
+		guard let entry = entries.first(where: { $0.name == name }) else { return .missing }
+		return entry.isDirectory ? .folder : .file
+	}
+
+	func kind(_ path: String, _ done: @escaping (PathKind) -> Void) {
+		DispatchQueue.global().async {
+			let k = self.kindSync(path)
+			DispatchQueue.main.async { done(k) }
+		}
+	}
+
 	func displayURL(_ path: String) -> String {
 		"ftp://\(site.username.isEmpty ? "" : site.username + "@")\(site.host)/\(path)"
 	}

@@ -89,6 +89,10 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 		sidebar.local.onOpen = { [weak self] in self?.open($0) }
 		sidebar.remote.onOpen = { [weak self] client, path in self?.openRemote(client, path) }
 		sidebar.remote.onManageSites = { [weak self] in self?.showSiteManager(nil) }
+		sidebar.remote.onSaveHere = { [weak self] client, folder in self?.saveToFTP(into: (client, folder)) }
+		sidebar.remote.hasOpenTab = { [weak self] in self?.current != nil }
+		sidebar.remote.onRenamed = { [weak self] site, old, new in self?.followRename(siteID: site, from: old, to: new) }
+		sidebar.remote.onDeleted = { [weak self] site, path in self?.markDeleted(siteID: site, path: path) }
 		sidebar.remote.favorites.onOpen = { [weak self] items in self?.openFavorites(items) }
 		sidebar.remote.favorites.onAddCurrent = { [weak self] in self?.addCurrentToProject(nil) }
 		tabBar.onStar = { [weak self] i in self?.toggleFavorite(at: i) }
@@ -242,6 +246,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 	@discardableResult
 	func save(_ doc: EditorDocument) -> Bool {
 		guard let url = doc.url else { return saveAs(doc) }
+		guard confirmRecreate(doc) else { return false }
 		do {
 			try doc.save(to: url)
 		} catch {
@@ -285,15 +290,15 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 				done?(true)
 			case let .failure(error):
 				if quiet { self.statusBar.setMessage("Couldn't reopen \(client.site.host)/\(path)", error: true) } else {
-					self.statusBar.setMessage("")
-					self.showError("Couldn't download “\(path)”.", error)
+					self.explainFailedOpen(client, path, error)
 				}
 				done?(false)
 			}
 		}
 	}
 
-	private func upload(_ doc: EditorDocument) {
+	/// `then` is told whether the upload succeeded (a Try Again that works counts).
+	private func upload(_ doc: EditorDocument, then: ((Bool) -> Void)? = nil) {
 		guard let remote = doc.remote, let local = doc.url else { return }
 		doc.uploadState = .uploading
 		statusBar.setMessage("Uploading \(remote.path)…")
@@ -304,6 +309,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 				doc.uploadState = .idle
 				let time = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
 				self.statusBar.setMessage("✓ Uploaded \(remote.path) to \(remote.client.site.host) at \(time)")
+				then?(true)
 			case let .failure(error):
 				doc.uploadState = .failed
 				doc.isDirty = true
@@ -314,10 +320,176 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 				alert.informativeText = error.message
 				alert.addButton(withTitle: "Try Again")
 				alert.addButton(withTitle: "Later")
-				if alert.runModal() == .alertFirstButtonReturn { self.upload(doc) }
+				if alert.runModal() == .alertFirstButtonReturn { self.upload(doc, then: then) } else { then?(false) }
 			}
 			self.refreshTabs()
 			self.updateTitle()
+		}
+	}
+
+	// MARK: Renamed or deleted on the server
+
+	/// Open tabs (and favorites) of a renamed file, or of files in a renamed folder, follow the new name,
+	/// so the next save uploads there instead of re-creating the old name.
+	private func followRename(siteID: String, from old: String, to new: String) {
+		for doc in documents {
+			guard let remote = doc.remote, remote.client.site.id == siteID,
+				  let path = FTPClient.renamed(remote.path, from: old, to: new) else { continue }
+			doc.remote = EditorDocument.RemoteFile(client: remote.client, path: path)
+			// Move the local copy too, so it can't clash with a new file later given the old name.
+			let moved = remote.client.cacheURL(for: path)
+			if let url = doc.url, (try? FileManager.default.createDirectory(at: moved.deletingLastPathComponent(), withIntermediateDirectories: true)) != nil {
+				try? FileManager.default.removeItem(at: moved)
+				if (try? FileManager.default.moveItem(at: url, to: moved)) != nil { doc.url = moved }
+			}
+		}
+		FavoritesStore.shared.followRename(siteID: siteID, from: old, to: new)
+		refreshTabs()
+		updateTitle()
+	}
+
+	private func markDeleted(siteID: String, path: String) {
+		for doc in documents where doc.remote?.client.site.id == siteID && doc.remote?.path == path {
+			doc.deletedOnServer = true
+		}
+		refreshTabs()
+		if FavoritesStore.shared.isFavorite(siteID: siteID, path: path) {
+			offerToRemoveFavorite(siteID: siteID, path: path, siteName: FTPSites.site(id: siteID)?.name ?? "the server", deletedHere: true)
+		}
+	}
+
+	/// A download failed: if the file is simply gone, say so (and offer to remove its favorite) instead of
+	/// showing the server's error. A server that can't be reached still shows the error.
+	private func explainFailedOpen(_ client: FTPClient, _ path: String, _ error: FTPError) {
+		statusBar.setMessage("Checking \(path)…")
+		client.kind(path) { [weak self] kind in
+			guard let self else { return }
+			self.statusBar.setMessage("")
+			if kind == .missing {
+				self.offerToRemoveFavorite(siteID: client.site.id, path: path, siteName: client.site.name, deletedHere: false)
+			} else {
+				self.showError("Couldn't download “\(path)”.", error)
+			}
+		}
+	}
+
+	/// "It doesn't exist", plus Remove from Favorites when it's a favorite (removed from every project it's in).
+	private func offerToRemoveFavorite(siteID: String, path: String, siteName: String, deletedHere: Bool) {
+		let name = (path as NSString).lastPathComponent
+		let store = FavoritesStore.shared
+		let projects = store.projects.filter { $0.items.contains { $0.same(siteID, path) } }.map(\.name)
+		let isFavorite = store.isFavorite(siteID: siteID, path: path)
+		let alert = NSAlert()
+		alert.messageText = deletedHere ? "“\(name)” was in your favorites." : "“\(name)” doesn't exist on \(siteName)."
+		var info = deletedHere
+			? "It no longer exists on \(siteName)."
+			: "It may have been deleted or renamed outside IDEPlus. It was at /\(path)."
+		if isFavorite {
+			info += projects.isEmpty ? " Remove it from your favorites?" : " Remove it from your favorites (\(projects.joined(separator: ", ")))?"
+			alert.addButton(withTitle: "Remove from Favorites")
+			alert.addButton(withTitle: "Keep")
+		}
+		alert.informativeText = info
+		guard alert.runModal() == .alertFirstButtonReturn, isFavorite else { return }
+		store.removeEverywhere(siteID: siteID, path: path)
+		statusBar.setMessage("Removed \(name) from Favorites")
+	}
+
+	/// Saving a tab whose file was deleted from the server: put it back only if you say so.
+	private func confirmRecreate(_ doc: EditorDocument) -> Bool {
+		guard doc.deletedOnServer, let remote = doc.remote else { return true }
+		let folder = "/" + (remote.path as NSString).deletingLastPathComponent
+		let alert = NSAlert()
+		alert.alertStyle = .warning
+		alert.messageText = "“\(doc.displayName)” was deleted on the server."
+		alert.informativeText = "Save it there again? It will be put back in \(folder) on \(remote.client.site.name)."
+		alert.addButton(withTitle: "Save to Server")
+		alert.addButton(withTitle: "Cancel")
+		guard alert.runModal() == .alertFirstButtonReturn else { return false }
+		doc.deletedOnServer = false
+		return true
+	}
+
+	// MARK: Save to FTP
+
+	/// File > Save to FTP…: into the folder selected in the FTP tree (or the selected file's folder, or the tree's top
+	/// folder). With no site connected, the dialog asks for one.
+	@objc func saveToFTP(_ sender: Any?) {
+		saveToFTP(into: sidebar.remote.saveFolder)
+	}
+
+	/// Shows the server and folder, waits for Save to Server, asks before replacing a file that is already there,
+	/// then uploads. The tab becomes an FTP tab: later saves upload without asking.
+	private func saveToFTP(into target: (client: FTPClient, path: String)?) {
+		guard let doc = current else { return }
+		let sites = FTPSites.all
+		guard !sites.isEmpty else {
+			let alert = NSAlert()
+			alert.messageText = "Add an FTP site first"
+			alert.informativeText = "Save to FTP needs a site to save to. Add one, then choose Save to FTP again."
+			alert.addButton(withTitle: "Add a Site…")
+			alert.addButton(withTitle: "Cancel")
+			if alert.runModal() == .alertFirstButtonReturn { showSiteManager(nil) }
+			return
+		}
+		guard let choice = SaveToFTPDialog.run(sites: sites, fixed: target.map { ($0.client.site, $0.path) }, name: doc.displayName) else { return }
+		let client: FTPClient
+		if let target, target.client.site.id == choice.siteID {
+			client = target.client
+		} else {
+			guard let c = sidebar.remote.client(for: choice.siteID) else { return }
+			client = c
+		}
+		let path = choice.path
+		let place = "/\((path as NSString).deletingLastPathComponent)/ on \(client.site.name)".replacingOccurrences(of: "//", with: "/")
+		let name = (path as NSString).lastPathComponent
+		if documents.contains(where: { $0 !== doc && $0.remote?.client.site.id == client.site.id && $0.remote?.path == path }) {
+			let alert = NSAlert()
+			alert.messageText = "“\(name)” is already open in another tab."
+			alert.informativeText = "Save in that tab instead, or close it first and try again."
+			alert.runModal()
+			return
+		}
+		statusBar.setMessage("Checking \(place)…")
+		client.kind(path) { [weak self, weak doc] kind in
+			guard let self, let doc else { return }
+			self.statusBar.setMessage("")
+			switch kind {
+			case .folder:
+				let alert = NSAlert()
+				alert.messageText = "There's a folder named “\(name)” in \(place)."
+				alert.informativeText = "Choose another name."
+				alert.runModal()
+				return
+			case .file:
+				let alert = NSAlert()
+				alert.alertStyle = .warning
+				alert.messageText = "Replace “\(name)” on the server?"
+				alert.informativeText = "A file with this name already exists in \(place). Replacing it overwrites the server's copy."
+				alert.addButton(withTitle: "Replace")
+				alert.addButton(withTitle: "Cancel")
+				guard alert.runModal() == .alertFirstButtonReturn else { return }
+			case .missing, .unknown:
+				// Unknown is usually a folder that doesn't exist yet: uploading creates it.
+				break
+			}
+			let local = client.cacheURL(for: path)
+			do {
+				try FileManager.default.createDirectory(at: local.deletingLastPathComponent(), withIntermediateDirectories: true)
+				try doc.save(to: local)
+			} catch {
+				self.showError("Couldn't save “\(name)”.", error)
+				return
+			}
+			doc.remote = EditorDocument.RemoteFile(client: client, path: path)
+			doc.uploadState = .idle
+			doc.deletedOnServer = false
+			self.refreshTabs()
+			self.updateTitle()
+			self.updateStatus()
+			self.upload(doc) { [weak self] ok in
+				if ok { self?.sidebar.remote.refreshFolder(siteID: client.site.id, path: (path as NSString).deletingLastPathComponent) }
+			}
 		}
 	}
 
@@ -410,7 +582,8 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 	func saveAs(_ doc: EditorDocument) -> Bool {
 		let panel = NSSavePanel()
 		panel.nameFieldStringValue = doc.displayName
-		panel.directoryURL = doc.url?.deletingLastPathComponent() ?? Preferences.lastFolder.map { URL(fileURLWithPath: $0) }
+		// An FTP tab's local copy lives in a temporary folder; start somewhere useful instead.
+		panel.directoryURL = (doc.remote == nil ? doc.url?.deletingLastPathComponent() : nil) ?? Preferences.lastFolder.map { URL(fileURLWithPath: $0) }
 		panel.isExtensionHidden = false
 		panel.canCreateDirectories = true
 		guard panel.runModal() == .OK, let url = panel.url else { return false }
@@ -421,6 +594,10 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 			showError("Couldn't save “\(url.lastPathComponent)”.", error)
 			return false
 		}
+		// Save As makes a plain copy on this Mac: it no longer uploads to the server file it came from.
+		doc.remote = nil
+		doc.uploadState = .idle
+		doc.deletedOnServer = false
 		refreshTabs()
 		updateTitle()
 		updateStatus()
@@ -463,9 +640,10 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 
 	private func refreshTabs() {
 		tabBar.items = documents.map { doc in
-			let mark = doc.uploadState == .uploading ? " ↑" : doc.uploadState == .failed ? " ⚠︎" : ""
+			let mark = doc.deletedOnServer ? " ⊘" : doc.uploadState == .uploading ? " ↑" : doc.uploadState == .failed ? " ⚠︎" : ""
+			let tooltip = doc.deletedOnServer ? doc.location + "\nDeleted on the server: saving asks before putting it back." : doc.location
 			let star = doc.remote.map { FavoritesStore.shared.isFavorite(siteID: $0.client.site.id, path: $0.path) }
-			return TabBarView.Item(title: doc.displayName + mark, dirty: doc.isDirty, tooltip: doc.location, star: star)
+			return TabBarView.Item(title: doc.displayName + mark, dirty: doc.isDirty, tooltip: tooltip, star: star)
 		}
 		tabBar.selectedIndex = currentIndex
 	}
@@ -907,7 +1085,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 	func validateMenuItem(_ item: NSMenuItem) -> Bool {
 		// With no tabs open, commands that work on a document are off.
 		let needsDocument: Set<Selector?> = [
-			#selector(closeTab(_:)), #selector(closeAllTabs(_:)), #selector(saveDocument(_:)), #selector(saveDocumentAs(_:)),
+			#selector(closeTab(_:)), #selector(closeAllTabs(_:)), #selector(saveDocument(_:)), #selector(saveDocumentAs(_:)), #selector(saveToFTP(_:)),
 			#selector(addCurrentToProject(_:)), #selector(showFindBar(_:)), #selector(showReplaceBar(_:)),
 			#selector(findNextMatch(_:)), #selector(findPreviousMatch(_:)), #selector(useSelectionForFind(_:)),
 			#selector(goToLine(_:)), #selector(selectLanguage(_:)), #selector(selectEncoding(_:)), #selector(selectLineEnding(_:)),

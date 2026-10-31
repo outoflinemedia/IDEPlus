@@ -18,7 +18,7 @@ final class RemoteNode {
 
 /// The FTP tab of the directory window: pick a site from the menu (that connects), browse, double-click to open.
 /// The menu always shows the site the tree is on; nothing connects until you pick one.
-final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate {
+final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate, NSMenuDelegate {
 	private let sitePopup = NSPopUpButton(frame: .zero, pullsDown: false)
 	private let pathLabel = NSTextField(labelWithString: "")
 	private var pathRow: NSStackView?
@@ -36,6 +36,35 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 
 	var onOpen: ((FTPClient, String) -> Void)?
 	var onManageSites: (() -> Void)?
+	/// Right-click > Save Current Tab Here: the site and folder.
+	var onSaveHere: ((FTPClient, String) -> Void)?
+	/// Whether a tab is open; Save Current Tab Here is left out of the menu when none is.
+	var hasOpenTab: (() -> Bool)?
+	private var saveHereItem: NSMenuItem?
+	/// After a rename on the server: site, old path, new path (a file or a folder).
+	var onRenamed: ((String, String, String) -> Void)?
+	/// After a file is deleted from the server: site and path.
+	var onDeleted: ((String, String) -> Void)?
+
+	/// Where Save to FTP puts a file: the selected folder, the selected file's folder, or the folder the tree shows.
+	/// Nil when no site is connected.
+	var saveFolder: (client: FTPClient, path: String)? {
+		guard let client, let root else { return nil }
+		if outline.selectedRow >= 0, let n = outline.item(atRow: outline.selectedRow) as? RemoteNode {
+			return (client, n.isDirectory ? n.path : (n.parent ?? root).path)
+		}
+		return (client, root.path)
+	}
+
+	/// Shows a file saved into a folder of the tree, if that folder is loaded.
+	func refreshFolder(siteID: String, path: String) {
+		guard client?.site.id == siteID, let root else { return }
+		func find(_ n: RemoteNode) -> RemoteNode? {
+			if n.path == path { return n }
+			return n.children?.lazy.compactMap(find).first
+		}
+		if let n = find(root), n.children != nil { refresh(n) }
+	}
 
 	override init(frame: NSRect) {
 		super.init(frame: frame)
@@ -393,6 +422,10 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 	private func makeContextMenu() -> NSMenu {
 		let m = NSMenu()
 		m.addItem(withTitle: "Add to Project", action: #selector(menuAddToProject), keyEquivalent: "").target = self
+		let saveHere = m.addItem(withTitle: "Save Current Tab Here…", action: #selector(menuSaveHere), keyEquivalent: "")
+		saveHere.target = self
+		saveHereItem = saveHere
+		m.delegate = self
 		m.addItem(.separator())
 		for (title, action) in [("Open", #selector(menuOpen)), ("New File…", #selector(menuNewFile)),
 								("New Folder…", #selector(menuNewFolder)), ("Rename…", #selector(menuRename)),
@@ -401,6 +434,10 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 			m.addItem(withTitle: title, action: action, keyEquivalent: "").target = self
 		}
 		return m
+	}
+
+	func menuNeedsUpdate(_ menu: NSMenu) {
+		saveHereItem?.isHidden = !(hasOpenTab?() ?? false)
 	}
 
 	private var clickedNode: RemoteNode? { outline.item(atRow: outline.clickedRow) as? RemoteNode }
@@ -465,6 +502,11 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 		if n.isDirectory { outline.expandItem(n) } else { onOpen?(client, n.path) }
 	}
 
+	@objc private func menuSaveHere() {
+		guard let client, let dir = targetFolder else { return }
+		onSaveHere?(client, dir.path)
+	}
+
 	@objc private func menuNewFile() {
 		guard let client, let dir = targetFolder, let name = ask("New file name") else { return }
 		let path = FTPClient.join(dir.path, name)
@@ -488,8 +530,9 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 		guard let client, let n = clickedNode, let name = ask("Rename “\(n.name)” to", n.name), name != n.name else { return }
 		let dir = n.parent ?? root
 		let target = FTPClient.join(dir?.path ?? "", name)
-		client.command(["RNFR " + n.path, "RNTO " + target]) { [weak self] in
-			self?.finish($0, "Renamed to \(name)", refreshing: dir)
+		client.command(["RNFR " + n.path, "RNTO " + target]) { [weak self] result in
+			if case .success = result { self?.onRenamed?(client.site.id, n.path, target) }
+			self?.finish(result, "Renamed to \(name)", refreshing: dir)
 		}
 	}
 
@@ -503,8 +546,9 @@ final class RemoteBrowserView: NSView, NSOutlineViewDataSource, NSOutlineViewDel
 		alert.addButton(withTitle: "Cancel")
 		guard alert.runModal() == .alertFirstButtonReturn else { return }
 		let dir = n.parent ?? root
-		client.command([(n.isDirectory ? "RMD " : "DELE ") + n.path]) { [weak self] in
-			self?.finish($0, "Deleted \(n.name)", refreshing: dir)
+		client.command([(n.isDirectory ? "RMD " : "DELE ") + n.path]) { [weak self] result in
+			if case .success = result, !n.isDirectory { self?.onDeleted?(client.site.id, n.path) }
+			self?.finish(result, "Deleted \(n.name)", refreshing: dir)
 		}
 	}
 

@@ -92,6 +92,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 			}
 			return
 		}
+		// IDEPLUS_SNAPSHOT_SAVEFTP=1: the Save to FTP dialog with a made-up site (saveftp.png, saveftp-site.png).
+		if ProcessInfo.processInfo.environment["IDEPLUS_SNAPSHOT_SAVEFTP"] != nil {
+			var site = FTPSite()
+			site.name = "My site"
+			site.host = "ftp.example.com"
+			site.username = "me"
+			func shot(_ window: NSWindow, _ name: String) {
+				guard let view = window.contentView, let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+				view.effectiveAppearance.performAsCurrentDrawingAppearance { view.cacheDisplay(in: view.bounds, to: rep) }
+				try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: "\(dir)/\(name).png"))
+			}
+			shot(SaveToFTPDialog.previewWindow(sites: [site], fixed: (site, "public_html/blog"), name: "contact.php"), "saveftp")
+			shot(SaveToFTPDialog.previewWindow(sites: [site], fixed: nil, name: "Untitled 1"), "saveftp-site")
+			exit(0)
+		}
 		// IDEPLUS_SNAPSHOT_SITES=1: the FTP Sites window (sites.png).
 		if ProcessInfo.processInfo.environment["IDEPLUS_SNAPSHOT_SITES"] != nil {
 			controller.showSiteManager(nil)
@@ -235,8 +250,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 		recent.submenu = recentMenu
 		recentMenu.delegate = self
 		main.addItem(menu("File", [
-			item("New", #selector(MainWindowController.newDocument(_:)), "n"),
-			item("Open…", #selector(MainWindowController.openDocument(_:)), "o"),
+			item("New File", #selector(MainWindowController.newDocument(_:)), "n"),
+			item("Open File…", #selector(MainWindowController.openDocument(_:)), "o"),
 			item("Open Folder…", #selector(MainWindowController.openFolder(_:)), "o", [.command, .shift]),
 			recent,
 			sep(),
@@ -249,6 +264,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 			sep(),
 			item("Save", #selector(MainWindowController.saveDocument(_:)), "s"),
 			item("Save As…", #selector(MainWindowController.saveDocumentAs(_:)), "s", [.command, .shift]),
+			item("Save to FTP…", #selector(MainWindowController.saveToFTP(_:)), "s", [.command, .control]),
 			item("Save All", #selector(MainWindowController.saveAllDocuments(_:)), "s", [.command, .option]),
 			sep(),
 			item("Reload from Disk", #selector(MainWindowController.reloadDocument(_:)), "r"),

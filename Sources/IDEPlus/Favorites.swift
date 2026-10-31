@@ -230,6 +230,18 @@ final class FavoritesStore {
 		changed()
 	}
 
+	/// After a file or folder is renamed on the server, favorites of it (or of files inside it) follow.
+	func followRename(siteID: String, from old: String, to new: String) {
+		var any = false
+		for item in projects.flatMap(\.items) + loose where item.siteID == siteID {
+			if let p = FTPClient.renamed(item.path, from: old, to: new) {
+				item.path = p
+				any = true
+			}
+		}
+		if any { changed() }
+	}
+
 	func isFavorite(siteID: String, path: String) -> Bool {
 		loose.contains { $0.same(siteID, path) } || projects.contains { $0.items.contains { $0.same(siteID, path) } }
 	}

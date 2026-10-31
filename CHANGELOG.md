@@ -7,6 +7,11 @@ Version numbers are `major.minor.fix`: the first changes for big changes, the mi
 ## Unreleased
 
 - The FTP site menu starts on "Choose a site…" and picking a site connects, so the menu always shows the site the tree is on. Nothing connects at launch. Add or Edit Sites… is at the bottom of the menu; the Connect and ⚙ buttons are gone.
+- File > Save to FTP… (⌃⌘S), or right-click a folder in the FTP tree > Save Current Tab Here…: shows the server and folder and waits for your OK, asks before replacing a file that's already there, then uploads. The tab becomes an FTP tab, so later saves upload as usual.
+- Renaming a file or folder in the FTP tree: open tabs and favorites follow the new name, so saving no longer re-creates the old one. Deleting an open file marks its tab ⊘, and saving it asks before putting it back on the server.
+- Opening a favorite whose file is gone from the server says it doesn't exist and offers Remove from Favorites. Deleting a favorite's file in the FTP tree offers the same. A server that can't be reached still shows its error, so a good favorite is never offered for removal.
+- Save As on an FTP tab now makes a plain copy on this Mac, which no longer uploads to the server file it came from.
+- The File menu says New File and Open File….
 
 ## 1.0.0 (2026-10-22)
 

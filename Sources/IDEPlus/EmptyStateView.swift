@@ -313,7 +313,7 @@ final class EmptyStateView: NSView {
 		case .idle:
 			drawCentered([
 				("No files open", .systemFont(ofSize: 20, weight: .semibold), .secondaryLabelColor),
-				("⌘N  New file      ⌘O  Open      ⌃⌘O  Open from FTP", .systemFont(ofSize: 12), .tertiaryLabelColor),
+				("⌘N  New file      ⌘O  Open file      ⌃⌘O  Open from FTP", .systemFont(ofSize: 12), .tertiaryLabelColor),
 				("", .systemFont(ofSize: 8), .clear),
 				("Press Space to play Space Rocks", .systemFont(ofSize: 12, weight: .medium), .controlAccentColor),
 			])
